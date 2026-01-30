@@ -1,254 +1,216 @@
-import React, { useState } from "react";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
 import {
-  Dimensions,
   Image,
-  ImageBackground,
+  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import Svg, { Circle } from "react-native-svg";
 
-// Gradient for the "Send OTP" button
-import { LinearGradient } from "expo-linear-gradient";
-
-// Icon for "Secure & Encrypted Login"
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-// Screen width used to make responsive UI
-const { width } = Dimensions.get("window");
-
-export default function HomeScreen() {
-  // State: stores mobile number entered by the user
-  const [mobile, setMobile] = useState("");
-
+export default function ProfileScreen() {
   return (
-    // Full screen background image
-    <ImageBackground
-      source={require("../../assets/images/pagebg.jpeg")}
-      style={styles.bg}
-      resizeMode="cover"
-    >
-      {/* ===========================
-          TOP SECTION (Logo + Title)
-         =========================== */}
-      <View style={styles.topSection}>
-        {/* Logo */}
-        <Image
-          source={require("../../assets/images/bicon.png")}
-          style={styles.logo}
-        />
+    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      {/* HEADER */}
+      <LinearGradient
+        colors={["#2E6CF6", "#4A8CFF"]}
+        style={styles.header}
+      >
+        {/* White dots overlay */}
+        <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
+          {Array.from({ length: 120 }).map((_, i) => (
+            <Circle
+              key={i}
+              cx={Math.random() * 400}
+              cy={Math.random() * 300}
+              r="1.2"
+              fill="rgba(255,255,255,0.25)"
+            />
+          ))}
+        </Svg>
 
-        {/* Brand Text */}
-        <Text style={styles.brandText}>BODHA</Text>
+        <Ionicons name="arrow-back" size={22} color="#fff" style={styles.back} />
+        <Text style={styles.title}>My Profile</Text>
 
-        {/* Subtitle */}
-        <Text style={styles.subBrandText}>CIVILS PREP</Text>
-      </View>
-
-      {/* ===========================
-          LOGIN CARD SECTION
-         =========================== */}
-      <View style={styles.card}>
-        {/* Label */}
-        <Text style={styles.label}>Mobile Number</Text>
-
-        {/* ===========================
-            INPUT BOX ( +91 + TextInput )
-           =========================== */}
-        <View style={styles.inputRow}>
-          {/* Country Code Box */}
-          <View style={styles.countryBox}>
-            <Text style={styles.countryText}>+91</Text>
+        {/* Profile Image */}
+        <View style={styles.avatarWrapper}>
+          <Image
+            source={require("../assets/user.png")} // dummy avatar
+            style={styles.avatar}
+          />
+          <View style={styles.camera}>
+            <Ionicons name="camera" size={16} color="#fff" />
           </View>
-
-          {/* Mobile Number Input */}
-          <TextInput
-            value={mobile}
-            onChangeText={setMobile}
-            placeholder="Enter mobile number"
-            placeholderTextColor="#8F8F8F"
-            keyboardType="number-pad"
-            maxLength={10}
-            style={styles.input}
-          />
         </View>
 
-        {/* ===========================
-            SEND OTP BUTTON
-           =========================== */}
-        <TouchableOpacity activeOpacity={0.9} style={styles.btnOuter}>
-          <LinearGradient
-            colors={["#5A1A9E", "#8B33D6"]} // Purple gradient
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.btn}
-          >
-            <Text style={styles.btnText}>Send OTP</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+        <Text style={styles.username}>User_3839</Text>
+        <Text style={styles.subText}>UPSC Aspirant · Premium Member</Text>
 
-        {/* ===========================
-            SECURE LOGIN TEXT
-           =========================== */}
-        <View style={styles.secureRow}>
-          <MaterialCommunityIcons
-            name="shield-check"
-            size={20}
-            color="#1E8E3E"
-          />
-          <Text style={styles.secureText}>Secure & Encrypted Login</Text>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
+        </View>
+      </LinearGradient>
+
+      {/* ACCOUNT INFO */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Account Information</Text>
+
+        <View style={styles.row}>
+          <Ionicons name="call" size={20} color="#2E6CF6" />
+          <Text style={styles.rowText}>7024913839</Text>
+          <Ionicons name="checkmark-circle" size={20} color="green" />
+        </View>
+
+        <View style={styles.row}>
+          <MaterialIcons name="email" size={20} color="#2E6CF6" />
+          <Text style={styles.rowText}>Official Bodha ID</Text>
+          <Text style={styles.reveal}>Tap to Reveal</Text>
         </View>
       </View>
-    </ImageBackground>
+
+      {/* SUBSCRIPTION */}
+      <View style={styles.card}>
+        <View style={styles.subHeader}>
+          <Text style={styles.cardTitle}>Subscription Status</Text>
+          <Text style={styles.active}>ACTIVE</Text>
+        </View>
+
+        <View style={styles.plan}>
+          <Text style={styles.planTitle}>Bodha Premium (UPSC Mode)</Text>
+
+          {[
+            "Structured PYQ-based Preparation",
+            "Anthropology / GS Smart Evaluation",
+            "Daily Discipline & Progress Tracking",
+            "Priority Mentor Support",
+          ].map((item, i) => (
+            <View key={i} style={styles.point}>
+              <Ionicons name="checkmark-circle" size={18} color="#1BA672" />
+              <Text style={styles.pointText}>{item}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* SIGN OUT */}
+      <TouchableOpacity style={styles.logout}>
+        <Text style={styles.logoutText}>Sign Out</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.footer}>
+        Bodha Civils Prep{"\n"}
+        <Text style={{ fontSize: 12, color: "#888" }}>
+          Serious Preparation. Structured Results.
+        </Text>
+      </Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  /* Full screen background container */
-  bg: {
-    flex: 1,
+  header: {
+    paddingTop: 60,
+    paddingBottom: 40,
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 18,
-  },
-
-  /* Top logo + title area */
-  topSection: {
-    alignItems: "center",
-    marginBottom: 25,
-  },
-
-  /* App logo image */
-  logo: {
-    width: 120,
-    height: 120,
-    resizeMode: "contain",
-    marginBottom: 10,
-  },
-
-  /* "BODHA" text */
-  brandText: {
-    fontSize: 42,
-    fontWeight: "900",
-    color: "#4B1B78",
-    letterSpacing: 1,
-  },
-
-  /* "CIVILS PREP" text */
-  subBrandText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#4B1B78",
-    letterSpacing: 2,
-    marginTop: 3,
-  },
-
-  /* White rounded card */
-  card: {
-    width: width - 35,
-    backgroundColor: "rgba(255,255,255,0.92)",
-    borderRadius: 30,
-    padding: 22,
-
-    // Shadow (Android + iOS)
-    shadowColor: "#000",
-    shadowOpacity: 0.16,
-    shadowRadius: 25,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 10,
-  },
-
-  /* Mobile Number label */
-  label: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#333",
-    marginBottom: 10,
-  },
-
-  /* Input row container (+91 box + input field) */
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F4F0FA",
-    borderRadius: 16,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#E0D3F2",
-    marginBottom: 20,
+  },
+  back: { position: "absolute", top: 60, left: 20 },
+  title: { color: "#fff", fontSize: 20, fontWeight: "600" },
+
+  avatarWrapper: {
+    marginTop: 20,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "#EAF0FF",
+  },
+  camera: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: "#2E6CF6",
+    padding: 6,
+    borderRadius: 15,
   },
 
-  /* +91 box */
-  countryBox: {
-    width: 70,
-    height: 52,
-    backgroundColor: "#EDE4FA",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRightWidth: 1,
-    borderRightColor: "#D3C2EE",
-  },
+  username: { color: "#fff", fontSize: 18, fontWeight: "600", marginTop: 10 },
+  subText: { color: "#EAF0FF", fontSize: 13 },
 
-  /* +91 text */
-  countryText: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#5A1A9E",
-  },
-
-  /* Mobile number input */
-  input: {
-    flex: 1,
-    height: 52,
+  badge: {
+    backgroundColor: "#FFD36A",
     paddingHorizontal: 14,
-    fontSize: 16,
-    color: "#333",
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: 10,
   },
+  badgeText: { fontWeight: "600" },
 
-  /* Outer button wrapper (shadow + rounded corners) */
-  btnOuter: {
-    borderRadius: 22,
-    overflow: "hidden",
-
-    shadowColor: "#5A1A9E",
-    shadowOpacity: 0.35,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 9,
-
-    marginBottom: 16,
+  card: {
+    backgroundColor: "#fff",
+    margin: 16,
+    padding: 16,
+    borderRadius: 16,
+    elevation: 4,
   },
+  cardTitle: { fontSize: 16, fontWeight: "600", marginBottom: 10 },
 
-  /* Gradient button area */
-  btn: {
-    height: 52,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  /* Button text (Reduced size for clean look) */
-  btnText: {
-    fontSize: 17, // reduced from 20
-    fontWeight: "800",
-    color: "#fff",
-    letterSpacing: 0.5,
-  },
-
-  /* Secure line row */
-  secureRow: {
+  row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
+    justifyContent: "space-between",
+    marginVertical: 8,
+  },
+  rowText: { flex: 1, marginLeft: 10 },
+  reveal: { color: "#2E6CF6" },
+
+  subHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  active: {
+    color: "#1BA672",
+    fontWeight: "600",
   },
 
-  /* Secure text */
-  secureText: {
-    fontSize: 14,
+  plan: {
+    backgroundColor: "#E9FFF5",
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 10,
+  },
+  planTitle: {
+    fontSize: 15,
     fontWeight: "600",
-    color: "#444",
+    marginBottom: 10,
+  },
+  point: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 4,
+  },
+  pointText: { marginLeft: 8 },
+
+  logout: {
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#FF5A5A",
+    borderRadius: 12,
+    padding: 14,
+    alignItems: "center",
+  },
+  logoutText: { color: "#FF5A5A", fontWeight: "600" },
+
+  footer: {
+    textAlign: "center",
+    marginVertical: 20,
+    fontWeight: "600",
+    color: "#2E6CF6",
   },
 });
