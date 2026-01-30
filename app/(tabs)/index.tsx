@@ -1,216 +1,316 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useState } from "react";
 import {
+  Alert,
+  Dimensions,
   Image,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import Svg, { Circle } from "react-native-svg";
 
+const { width } = Dimensions.get("window");
+
+/* ================= STATIC DOTS ================= */
+const StaticDots = () => (
+  <View style={StyleSheet.absoluteFill}>
+    {[...Array(8)].map((_, i) => (
+      <View
+        key={i}
+        style={[
+          styles.dot,
+          { top: 70 + i * 18, left: 25 + i * 35 },
+        ]}
+      />
+    ))}
+  </View>
+);
+
+/* ================= MAIN SCREEN ================= */
 export default function ProfileScreen() {
+  const [edit, setEdit] = useState(false);
+  const [name, setName] = useState("User_3839");
+  const [showId, setShowId] = useState(false);
+  const [avatar, setAvatar] = useState<string | null>(null);
+
+  /* ===== WHATSAPP DP CHOOSER ===== */
+  const openDPChooser = () => {
+    Alert.alert("Profile Photo", "Choose an option", [
+      { text: "Camera", onPress: openCamera },
+      { text: "Gallery", onPress: openGallery },
+      { text: "Cancel", style: "cancel" },
+    ]);
+  };
+
+  const openCamera = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) return;
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) setAvatar(result.assets[0].uri);
+  };
+
+  const openGallery = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) setAvatar(result.assets[0].uri);
+  };
+
   return (
-    <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* HEADER */}
-      <LinearGradient
-        colors={["#2E6CF6", "#4A8CFF"]}
-        style={styles.header}
-      >
-        {/* White dots overlay */}
-        <Svg height="100%" width="100%" style={StyleSheet.absoluteFill}>
-          {Array.from({ length: 120 }).map((_, i) => (
-            <Circle
-              key={i}
-              cx={Math.random() * 400}
-              cy={Math.random() * 300}
-              r="1.2"
-              fill="rgba(255,255,255,0.25)"
-            />
-          ))}
-        </Svg>
+      <LinearGradient colors={["#2E1065", "#4C1D95"]} style={styles.header}>
+        <StaticDots />
 
-        <Ionicons name="arrow-back" size={22} color="#fff" style={styles.back} />
-        <Text style={styles.title}>My Profile</Text>
-
-        {/* Profile Image */}
-        <View style={styles.avatarWrapper}>
-          <Image
-            source={require("../assets/user.png")} // dummy avatar
-            style={styles.avatar}
-          />
-          <View style={styles.camera}>
-            <Ionicons name="camera" size={16} color="#fff" />
-          </View>
+        <View style={styles.headerTop}>
+          <Ionicons name="arrow-back" size={22} color="#fff" />
+          <Text style={styles.headerTitle}>My Profile</Text>
+          <Ionicons name="refresh" size={20} color="#fff" />
         </View>
 
-        <Text style={styles.username}>User_3839</Text>
-        <Text style={styles.subText}>UPSC Aspirant · Premium Member</Text>
+        {/* PROFILE PIC */}
+        <TouchableOpacity style={styles.avatar} onPress={openDPChooser}>
+          {avatar ? (
+            <Image source={{ uri: avatar }} style={styles.avatarImg} />
+          ) : (
+            <Ionicons name="person" size={46} color="#4C1D95" />
+          )}
+          <View style={styles.camera}>
+            <Ionicons name="camera" size={14} color="#fff" />
+          </View>
+        </TouchableOpacity>
 
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
+        <Text style={styles.name}>{name}</Text>
+        <Text style={styles.role}>UPSC Aspirant · Premium Member</Text>
+
+        {/* PREMIUM BADGE */}
+        <View style={styles.premiumWrap}>
+          <View style={styles.premiumGoldCurve} />
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
+          </View>
         </View>
       </LinearGradient>
 
       {/* ACCOUNT INFO */}
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>Account Information</Text>
+        <View style={styles.goldCurve} />
 
-        <View style={styles.row}>
-          <Ionicons name="call" size={20} color="#2E6CF6" />
-          <Text style={styles.rowText}>7024913839</Text>
-          <Ionicons name="checkmark-circle" size={20} color="green" />
+        <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>Account Information</Text>
+          <TouchableOpacity onPress={() => setEdit(!edit)}>
+            <Ionicons
+              name={edit ? "checkmark" : "pencil"}
+              size={18}
+              color="#4C1D95"
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.row}>
-          <MaterialIcons name="email" size={20} color="#2E6CF6" />
-          <Text style={styles.rowText}>Official Bodha ID</Text>
-          <Text style={styles.reveal}>Tap to Reveal</Text>
+          <Text style={styles.label}>FULL NAME</Text>
+          {edit ? (
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              style={styles.input}
+            />
+          ) : (
+            <Text style={styles.value}>{name}</Text>
+          )}
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>MOBILE NUMBER</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text style={styles.value}>7024913839</Text>
+            <Ionicons
+              name="checkmark-circle"
+              size={16}
+              color="#22C55E"
+              style={{ marginLeft: 6 }}
+            />
+          </View>
+        </View>
+
+        <View style={styles.row}>
+          <Text style={styles.label}>OFFICIAL BODHA ID</Text>
+          <TouchableOpacity onPress={() => setShowId(!showId)}>
+            <Text style={styles.reveal}>
+              {showId ? "BODHA-UPSC-83921" : "Tap to Reveal"}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
-      {/* SUBSCRIPTION */}
-      <View style={styles.card}>
-        <View style={styles.subHeader}>
-          <Text style={styles.cardTitle}>Subscription Status</Text>
-          <Text style={styles.active}>ACTIVE</Text>
-        </View>
-
-        <View style={styles.plan}>
-          <Text style={styles.planTitle}>Bodha Premium (UPSC Mode)</Text>
-
-          {[
-            "Structured PYQ-based Preparation",
-            "Anthropology / GS Smart Evaluation",
-            "Daily Discipline & Progress Tracking",
-            "Priority Mentor Support",
-          ].map((item, i) => (
-            <View key={i} style={styles.point}>
-              <Ionicons name="checkmark-circle" size={18} color="#1BA672" />
-              <Text style={styles.pointText}>{item}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      {/* SIGN OUT */}
+      {/* LOGOUT */}
       <TouchableOpacity style={styles.logout}>
+        <MaterialIcons name="logout" size={18} color="#DC2626" />
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
-
-      <Text style={styles.footer}>
-        Bodha Civils Prep{"\n"}
-        <Text style={{ fontSize: 12, color: "#888" }}>
-          Serious Preparation. Structured Results.
-        </Text>
-      </Text>
     </ScrollView>
   );
 }
 
+/* ================= STYLES ================= */
 const styles = StyleSheet.create({
+  container: { backgroundColor: "#F5F3FF" },
+
   header: {
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: 50,
+    paddingBottom: 105,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
     alignItems: "center",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
     overflow: "hidden",
   },
-  back: { position: "absolute", top: 60, left: 20 },
-  title: { color: "#fff", fontSize: 20, fontWeight: "600" },
 
-  avatarWrapper: {
-    marginTop: 20,
+  headerTop: {
+    width: "100%",
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
+
+  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
+
   avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "#EAF0FF",
+    marginTop: 30,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: "#fff",
+    overflow: "hidden",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 6,
   },
+
+  avatarImg: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+
   camera: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    backgroundColor: "#2E6CF6",
-    padding: 6,
-    borderRadius: 15,
+    bottom: 4,
+    right: 4,
+    backgroundColor: "#4C1D95",
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  username: { color: "#fff", fontSize: 18, fontWeight: "600", marginTop: 10 },
-  subText: { color: "#EAF0FF", fontSize: 13 },
+  name: { color: "#fff", fontSize: 18, marginTop: 10 },
+  role: { color: "#E9D5FF", fontSize: 13 },
+
+  premiumWrap: { marginTop: 10, alignItems: "center" },
+
+  premiumGoldCurve: {
+    position: "absolute",
+    top: 0,
+    width: 170,
+    height: 10,
+    borderTopWidth: 2,
+    borderColor: "#D4AF37",
+    borderTopLeftRadius: 90,
+    borderTopRightRadius: 90,
+  },
 
   badge: {
-    backgroundColor: "#FFD36A",
-    paddingHorizontal: 14,
+    backgroundColor: "#FACC15",
+    paddingHorizontal: 18,
     paddingVertical: 6,
-    borderRadius: 20,
-    marginTop: 10,
+    borderRadius: 18,
   },
-  badgeText: { fontWeight: "600" },
+
+  badgeText: { fontSize: 12, fontWeight: "600", color: "#5B3A00" },
 
   card: {
     backgroundColor: "#fff",
-    margin: 16,
+    marginHorizontal: 16,
+    marginTop: 20,
+    borderRadius: 20,
     padding: 16,
-    borderRadius: 16,
     elevation: 4,
   },
-  cardTitle: { fontSize: 16, fontWeight: "600", marginBottom: 10 },
+
+  goldCurve: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 14,
+    borderTopWidth: 2,
+    borderColor: "#D4AF37",
+    borderTopLeftRadius: 120,
+    borderTopRightRadius: 120,
+  },
+
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+
+  cardTitle: { fontWeight: "600" },
 
   row: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     marginVertical: 8,
   },
-  rowText: { flex: 1, marginLeft: 10 },
-  reveal: { color: "#2E6CF6" },
 
-  subHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  active: {
-    color: "#1BA672",
-    fontWeight: "600",
+  label: { color: "#6B7280", fontSize: 12 },
+  value: { fontWeight: "500" },
+
+  input: {
+    borderBottomWidth: 1,
+    borderColor: "#C4B5FD",
+    minWidth: 160,
+    textAlign: "right",
   },
 
-  plan: {
-    backgroundColor: "#E9FFF5",
-    padding: 14,
-    borderRadius: 12,
-    marginTop: 10,
-  },
-  planTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 10,
-  },
-  point: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 4,
-  },
-  pointText: { marginLeft: 8 },
+  reveal: { color: "#4C1D95", fontWeight: "500" },
 
   logout: {
-    marginHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#FF5A5A",
-    borderRadius: 12,
-    padding: 14,
+    marginTop: 30,
+    alignSelf: "center",
+    flexDirection: "row",
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#FCA5A5",
+    paddingHorizontal: 22,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
-  logoutText: { color: "#FF5A5A", fontWeight: "600" },
 
-  footer: {
-    textAlign: "center",
-    marginVertical: 20,
-    fontWeight: "600",
-    color: "#2E6CF6",
+  logoutText: { color: "#DC2626", marginLeft: 6 },
+
+  dot: {
+    position: "absolute",
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.25)",
   },
 });
