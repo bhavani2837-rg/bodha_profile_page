@@ -16,29 +16,13 @@ import {
 
 const { width } = Dimensions.get("window");
 
-/* ================= STATIC DOTS ================= */
-const StaticDots = () => (
-  <View style={StyleSheet.absoluteFill}>
-    {[...Array(8)].map((_, i) => (
-      <View
-        key={i}
-        style={[
-          styles.dot,
-          { top: 70 + i * 18, left: 25 + i * 35 },
-        ]}
-      />
-    ))}
-  </View>
-);
-
-/* ================= MAIN SCREEN ================= */
 export default function ProfileScreen() {
   const [edit, setEdit] = useState(false);
   const [name, setName] = useState("User_3839");
   const [showId, setShowId] = useState(false);
   const [avatar, setAvatar] = useState<string | null>(null);
 
-  /* ===== WHATSAPP DP CHOOSER ===== */
+  /* ================= IMAGE PICKER ================= */
   const openDPChooser = () => {
     Alert.alert("Profile Photo", "Choose an option", [
       { text: "Camera", onPress: openCamera },
@@ -73,43 +57,56 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* HEADER */}
-      <LinearGradient colors={["#2E1065", "#4C1D95"]} style={styles.header}>
-        <StaticDots />
+      {/* ================= HEADER ================= */}
+      <LinearGradient
+        colors={["#5A1E8A", "#7A3DB5", "#9A5FD0"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.header}
+      >
+        <View style={styles.waveBack} />
+        <View style={styles.waveMid} />
+        <View style={styles.waveFront} />
+        <View style={styles.goldCurveBottom} />
 
         <View style={styles.headerTop}>
-          <Ionicons name="arrow-back" size={22} color="#fff" />
+          <Ionicons name="chevron-back" size={26} color="#fff" />
           <Text style={styles.headerTitle}>My Profile</Text>
-          <Ionicons name="refresh" size={20} color="#fff" />
+          <Ionicons name="refresh" size={22} color="#fff" />
         </View>
 
-        {/* PROFILE PIC */}
-        <TouchableOpacity style={styles.avatar} onPress={openDPChooser}>
-          {avatar ? (
-            <Image source={{ uri: avatar }} style={styles.avatarImg} />
-          ) : (
-            <Ionicons name="person" size={46} color="#4C1D95" />
-          )}
-          <View style={styles.camera}>
-            <Ionicons name="camera" size={14} color="#fff" />
-          </View>
-        </TouchableOpacity>
+        {/* ===== SINGLE BORDER PROFILE PHOTO ===== */}
+        <View style={styles.avatarBorder}>
+          <TouchableOpacity style={styles.avatar} onPress={openDPChooser}>
+            {avatar ? (
+              <Image source={{ uri: avatar }} style={styles.avatarImg} />
+            ) : (
+              <Ionicons name="person" size={46} color="#CBD5E1" />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.cameraButton}
+            onPress={openDPChooser}
+          >
+            <Ionicons name="camera" size={16} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.name}>{name}</Text>
         <Text style={styles.role}>UPSC Aspirant · Premium Member</Text>
-
-        {/* PREMIUM BADGE */}
-        <View style={styles.premiumWrap}>
-          <View style={styles.premiumGoldCurve} />
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
-          </View>
-        </View>
       </LinearGradient>
 
-      {/* ACCOUNT INFO */}
+      {/* ================= PREMIUM BADGE ================= */}
+      <View style={styles.premiumSection}>
+        <View style={styles.badge}>
+          <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
+        </View>
+      </View>
+
+      {/* ================= ACCOUNT INFORMATION ================= */}
       <View style={styles.card}>
-        <View style={styles.goldCurve} />
+        <View style={styles.goldCurveTop} />
 
         <View style={styles.cardHeader}>
           <Text style={styles.cardTitle}>Account Information</Text>
@@ -117,7 +114,7 @@ export default function ProfileScreen() {
             <Ionicons
               name={edit ? "checkmark" : "pencil"}
               size={18}
-              color="#4C1D95"
+              color="#6D28D9"
             />
           </TouchableOpacity>
         </View>
@@ -158,11 +155,56 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* LOGOUT */}
+      {/* ================= SUBSCRIPTION STATUS ================= */}
+      <View style={styles.card}>
+        <View style={styles.goldCurveTop} />
+
+        <View style={styles.subHeader}>
+          <Text style={styles.cardTitle}>Subscription Status</Text>
+          <View style={styles.activeBadge}>
+            <Text style={styles.activeText}>ACTIVE</Text>
+          </View>
+        </View>
+
+        <LinearGradient
+          colors={["#047857", "#059669"]}
+          style={styles.planCard}
+        >
+          <View style={styles.planRow}>
+            <Text style={styles.planLabel}>YOUR PLAN</Text>
+            <View style={styles.planActive}>
+              <Text style={styles.planActiveText}>ACTIVE</Text>
+            </View>
+          </View>
+
+          <Text style={styles.planName}>
+            Bodha Premium (UPSC Mode)
+          </Text>
+        </LinearGradient>
+
+        {[
+          "Structured PYQ-based Preparation",
+          "Anthropology / GS Smart Evaluation",
+          "Daily Discipline & Progress Tracking",
+          "Priority Mentor Support",
+        ].map((t, i) => (
+          <View key={i} style={styles.benefitRow}>
+            <Ionicons name="checkmark-circle" size={18} color="#16A34A" />
+            <Text style={styles.benefitText}>{t}</Text>
+          </View>
+        ))}
+      </View>
+
+      {/* ================= LOGOUT ================= */}
       <TouchableOpacity style={styles.logout}>
         <MaterialIcons name="logout" size={18} color="#DC2626" />
         <Text style={styles.logoutText}>Sign Out</Text>
       </TouchableOpacity>
+
+      <Text style={styles.footer}>Bodha Civils Prep</Text>
+      <Text style={styles.footerSub}>
+        Serious Preparation. Structured Results.
+      </Text>
     </ScrollView>
   );
 }
@@ -173,11 +215,55 @@ const styles = StyleSheet.create({
 
   header: {
     paddingTop: 50,
-    paddingBottom: 105,
+    paddingBottom: 100,
     borderBottomLeftRadius: 36,
     borderBottomRightRadius: 36,
-    alignItems: "center",
     overflow: "hidden",
+    alignItems: "center",
+  },
+
+  waveBack: {
+    position: "absolute",
+    bottom: 60,
+    left: -120,
+    width: width + 240,
+    height: 200,
+    backgroundColor: "rgba(255,255,255,0.04)",
+    borderTopLeftRadius: 400,
+    borderTopRightRadius: 400,
+  },
+
+  waveMid: {
+    position: "absolute",
+    bottom: 30,
+    left: -100,
+    width: width + 200,
+    height: 180,
+    backgroundColor: "rgba(255,255,255,0.06)",
+    borderTopLeftRadius: 380,
+    borderTopRightRadius: 380,
+  },
+
+  waveFront: {
+    position: "absolute",
+    bottom: 10,
+    left: -80,
+    width: width + 160,
+    height: 160,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderTopLeftRadius: 360,
+    borderTopRightRadius: 360,
+  },
+
+  goldCurveBottom: {
+    position: "absolute",
+    bottom: 0,
+    left: -40,
+    width: width + 80,
+    height: 6,
+    backgroundColor: "#D4AF37",
+    borderTopLeftRadius: 200,
+    borderTopRightRadius: 200,
   },
 
   headerTop: {
@@ -190,60 +276,57 @@ const styles = StyleSheet.create({
 
   headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
 
+  /* ===== SINGLE BORDER AVATAR ===== */
+  avatarBorder: {
+    marginTop: 28,
+    width: 104,
+    height: 104,
+    borderRadius: 52,
+    borderWidth: 3,
+    borderColor: "#E9D5FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   avatar: {
-    marginTop: 30,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
     backgroundColor: "#fff",
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-    elevation: 6,
   },
 
-  avatarImg: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
+  avatarImg: { width: "100%", height: "100%", resizeMode: "cover" },
 
-  camera: {
+  cameraButton: {
     position: "absolute",
-    bottom: 4,
-    right: 4,
-    backgroundColor: "#4C1D95",
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    bottom: -4,
+    right: -4,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#6D28D9",
+    borderWidth: 2,
+    borderColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
 
-  name: { color: "#fff", fontSize: 18, marginTop: 10 },
+  name: { color: "#fff", fontSize: 18, marginTop: 12 },
   role: { color: "#E9D5FF", fontSize: 13 },
 
-  premiumWrap: { marginTop: 10, alignItems: "center" },
-
-  premiumGoldCurve: {
-    position: "absolute",
-    top: 0,
-    width: 170,
-    height: 10,
-    borderTopWidth: 2,
-    borderColor: "#D4AF37",
-    borderTopLeftRadius: 90,
-    borderTopRightRadius: 90,
-  },
+  premiumSection: { alignItems: "center", marginTop: -18 },
 
   badge: {
-    backgroundColor: "#FACC15",
+    backgroundColor: "#FDE68A",
     paddingHorizontal: 18,
     paddingVertical: 6,
     borderRadius: 18,
   },
 
-  badgeText: { fontSize: 12, fontWeight: "600", color: "#5B3A00" },
+  badgeText: { fontSize: 12, fontWeight: "600", color: "#92400E" },
 
   card: {
     backgroundColor: "#fff",
@@ -254,7 +337,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  goldCurve: {
+  goldCurveTop: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -290,7 +373,62 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
 
-  reveal: { color: "#4C1D95", fontWeight: "500" },
+  reveal: { color: "#6D28D9", fontWeight: "500" },
+
+  subHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+
+  activeBadge: {
+    backgroundColor: "#FEF3C7",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+
+  activeText: { color: "#92400E", fontSize: 11, fontWeight: "600" },
+
+  planCard: {
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+  },
+
+  planRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  planLabel: { color: "#ECFDF5", fontSize: 11 },
+
+  planActive: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    paddingHorizontal: 10,
+    borderRadius: 10,
+  },
+
+  planActiveText: { color: "#ECFDF5", fontSize: 11 },
+
+  planName: {
+    color: "#ECFDF5",
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: 6,
+  },
+
+  benefitRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  benefitText: {
+    marginLeft: 8,
+    color: "#374151",
+    fontSize: 13,
+  },
 
   logout: {
     marginTop: 30,
@@ -306,11 +444,17 @@ const styles = StyleSheet.create({
 
   logoutText: { color: "#DC2626", marginLeft: 6 },
 
-  dot: {
-    position: "absolute",
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "rgba(255,255,255,0.25)",
+  footer: {
+    textAlign: "center",
+    marginTop: 22,
+    fontWeight: "600",
+    color: "#2563EB",
+  },
+
+  footerSub: {
+    textAlign: "center",
+    color: "#6B7280",
+    marginBottom: 30,
+    fontSize: 12,
   },
 });
