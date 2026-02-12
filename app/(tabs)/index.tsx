@@ -1,460 +1,510 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import * as ImagePicker from "expo-image-picker";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons"; // home screen updated
+
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  Alert,
+  AppState,
   Dimensions,
   Image,
+  ImageBackground,
+  Pressable,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 
-const { width } = Dimensions.get("window");
+const logoImg = require("../../assets/bodha_logo.png");
+const gs1Icon = require("../../assets/gs1_icon.png");
+const gs2Icon = require("../../assets/gs2_icon.png");
+const gs1Bg = require("../../assets/gs1_bg.png");
+const gs2Bg = require("../../assets/gs2_bg.png");
 
-export default function ProfileScreen() {
-  const [edit, setEdit] = useState(false);
-  const [name, setName] = useState("User_3839");
-  const [showId, setShowId] = useState(false);
-  const [avatar, setAvatar] = useState<string | null>(null);
 
-  /* ================= IMAGE PICKER ================= */
-  const openDPChooser = () => {
-    Alert.alert("Profile Photo", "Choose an option", [
-      { text: "Camera", onPress: openCamera },
-      { text: "Gallery", onPress: openGallery },
-      { text: "Cancel", style: "cancel" },
-    ]);
-  };
+/* ================= BANNER DATA ================= */
+const banners = [
+  {
+    title: "Daily Study Goals",
+    subtitle: "Stay consistent, achieve greatness",
+    icon: "book",
+    iconBg: ["#FF9A8B", "#FF6A88"] as const,
+  },
+  {
+    title: "UPSC Daily Quiz",
+    subtitle: "Test your knowledge every day",
+    icon: "clipboard",
+    iconBg: ["#6EC6FF", "#4D9CFF"] as const,
+  },
+  {
+    title: "Answer Writing Practice",
+    subtitle: "Improve speed & clarity",
+    icon: "create",
+    iconBg: ["#7BE495", "#56C596"] as const,
+  },
+];
 
-  const openCamera = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) return;
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
+export default function App() {
+  const { width } = Dimensions.get("window");
+  const CARD_WIDTH = width - 48;
+  const SPACING = 16;
+
+  const scrollRef = useRef<ScrollView>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+;
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  /* ===== BLINK STATE (ADDED) ===== */
+  const [gsPressed, setGsPressed] = useState<null | "GS1" | "GS2">(null);
+
+  /* ===== Auto slide ===== */
+  const startAutoSlide = () => {
+  stopAutoSlide();
+  intervalRef.current = setInterval(() => {
+    setActiveIndex((prev) => {
+      const next = (prev + 1) % banners.length;
+      scrollRef.current?.scrollTo({
+        x: next * (CARD_WIDTH + SPACING),
+        animated: true,
+      });
+      return next;
     });
+  }, 3000);
+};
 
-    if (!result.canceled) setAvatar(result.assets[0].uri);
-  };
+const stopAutoSlide = () => {
+  if (intervalRef.current !== null) {
+    clearInterval(intervalRef.current);
+  }
+  intervalRef.current = null;
+};
 
-  const openGallery = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
 
-    if (!result.canceled) setAvatar(result.assets[0].uri);
-  };
+  useEffect(() => {
+    startAutoSlide();
+    const sub = AppState.addEventListener("change", (s) =>
+      s === "active" ? startAutoSlide() : stopAutoSlide()
+    );
+    return () => {
+      stopAutoSlide();
+      sub.remove();
+    };
+  }, []);
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* ================= HEADER ================= */}
-      <LinearGradient
-        colors={["#5A1E8A", "#7A3DB5", "#9A5FD0"]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
+    <View style={{ flex: 1, backgroundColor: "#f2e8fd" }}>
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 160 }}
       >
-        <View style={styles.waveBack} />
-        <View style={styles.waveMid} />
-        <View style={styles.waveFront} />
-        <View style={styles.goldCurveBottom} />
+        <StatusBar barStyle="dark-content" />
 
-        <View style={styles.headerTop}>
-          <Ionicons name="chevron-back" size={26} color="#fff" />
-          <Text style={styles.headerTitle}>My Profile</Text>
-          <Ionicons name="refresh" size={22} color="#fff" />
+        {/* ===== Header ===== */}
+        <View style={styles.header}>
+          <View style={styles.iconButton}>
+            <Ionicons name="menu" size={22} color="#555" />
+          </View>
+          <View style={styles.profile}>
+            <Ionicons name="person" size={22} color="#6A3EA1" />
+          </View>
         </View>
 
-        {/* ===== SINGLE BORDER PROFILE PHOTO ===== */}
-        <View style={styles.avatarBorder}>
-          <TouchableOpacity style={styles.avatar} onPress={openDPChooser}>
-            {avatar ? (
-              <Image source={{ uri: avatar }} style={styles.avatarImg} />
-            ) : (
-              <Ionicons name="person" size={46} color="#CBD5E1" />
-            )}
-          </TouchableOpacity>
+        {/* ===== Logo ===== */}
+        <View style={styles.logoSection}>
+          <Image source={logoImg} style={styles.logoImage} />
+          <Text style={styles.appName}>BODHA</Text>
+          <Text style={styles.subTitle}>Civils Prep</Text>
+          <Text style={styles.tagline}>Your Gateway to Success ✨</Text>
+        </View>
 
-          <TouchableOpacity
-            style={styles.cameraButton}
-            onPress={openDPChooser}
+        {/* ===== CAROUSEL ===== */}
+        <View style={{ marginVertical: 10 }}>
+          <ScrollView
+            ref={scrollRef}
+            horizontal
+            snapToInterval={CARD_WIDTH + SPACING}
+            decelerationRate="fast"
+            snapToAlignment="center"
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingHorizontal: (width - CARD_WIDTH) / 2,
+            }}
+            onMomentumScrollEnd={(e) => {
+              const index = Math.round(
+                e.nativeEvent.contentOffset.x /
+                  (CARD_WIDTH + SPACING)
+              );
+              setActiveIndex(index);
+            }}
           >
-            <Ionicons name="camera" size={16} color="#fff" />
-          </TouchableOpacity>
+            {banners.map((item, index) => (
+              <LinearGradient
+                key={index}
+                colors={["#3A247B", "#5A3FA8", "#4C6EDB"]}
+                style={[
+                  styles.banner,
+                  { width: CARD_WIDTH, marginRight: SPACING },
+                ]}
+              >
+                <LinearGradient colors={item.iconBg} style={styles.bannerIcon}>
+                  <Ionicons name={item.icon as any} size={30} color="#fff" />
+                </LinearGradient>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.bannerTitle}>{item.title}</Text>
+                  <Text style={styles.bannerSub}>{item.subtitle}</Text>
+                </View>
+              </LinearGradient>
+            ))}
+          </ScrollView>
+
+          <View style={styles.dotsContainer}>
+            {banners.map((_, i) => (
+              <View
+                key={i}
+                style={[
+                  styles.dot,
+                  activeIndex === i && styles.activeDot,
+                ]}
+              />
+            ))}
+          </View>
         </View>
 
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.role}>UPSC Aspirant · Premium Member</Text>
-      </LinearGradient>
-
-      {/* ================= PREMIUM BADGE ================= */}
-      <View style={styles.premiumSection}>
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>⭐ Premium Aspirant</Text>
+        {/* ===== Section Header ===== */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>General Studies</Text>
+          <Text style={styles.sectionSub}>Master the fundamentals</Text>
         </View>
+
+        {/* ===== GS CARDS ===== */}
+        <View style={styles.gsRow}>
+          {/* GS 1 */}
+          <Pressable
+            style={{ width: "48%", borderRadius: 22, overflow: "hidden" }}
+            android_ripple={{ color: "rgba(0,0,0,0.08)", borderless: false }}
+            onPressIn={() => setGsPressed("GS1")}
+            onPressOut={() => setGsPressed(null)}
+          >
+            {({ pressed }) => (
+              <LinearGradient
+                colors={["#CFA8FF", "#9E7BFF"]}
+                style={[
+                  styles.gsBorder,
+                  pressed && styles.glowPressedPurple,
+                  gsPressed === "GS1" && { opacity: 0.75 },
+                ]}
+              >
+                <ImageBackground
+                  source={gs1Bg}
+                  resizeMode="cover"
+                  style={styles.gsCard}
+                  imageStyle={{ borderRadius: 20 }}
+                >
+                  <View style={styles.gsContent}>
+                    <View style={styles.gsIconTile}>
+                      <Image source={gs1Icon} style={styles.gsInnerLogo} />
+                    </View>
+
+                    <View>
+                      <Text style={styles.gsTitle}>GS 1</Text>
+                      <Text style={styles.gsSub}>History & Culture</Text>
+                    </View>
+
+                    <View style={styles.gsFooter}>
+                      <View style={[styles.topicPillPurple, styles.topicPillOffset]}>
+
+                        <MaterialIcons
+                          name="library-books"
+                          size={10}
+                          color="#6A3EA1"
+                        />
+                        <Text style={styles.topicTextPurple}>14 Topics</Text>
+                      </View>
+                      <View style={styles.arrowPurple}>
+                        <Ionicons name="arrow-forward" size={18} color="#fff" />
+                      </View>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </LinearGradient>
+            )}
+          </Pressable>
+
+          {/* GS 2 */}
+          <Pressable
+            style={{ width: "48%", borderRadius: 22, overflow: "hidden" }}
+            android_ripple={{ color: "rgba(0,0,0,0.08)", borderless: false }}
+            onPressIn={() => setGsPressed("GS2")}
+            onPressOut={() => setGsPressed(null)}
+          >
+            {({ pressed }) => (
+              <LinearGradient
+                colors={["#A7C7FF", "#6EA8FF"]}
+                style={[
+                  styles.gsBorder,
+                  pressed && styles.glowPressedBlue,
+                  gsPressed === "GS2" && { opacity: 0.75 },
+                ]}
+              >
+                <ImageBackground
+                  source={gs2Bg}
+                  resizeMode="cover"
+                  style={styles.gsCard}
+                  imageStyle={{ borderRadius: 20 }}
+                >
+                  <View style={styles.gsContent}>
+                    <View style={styles.gsIconTile}>
+                      <Image source={gs2Icon} style={styles.gsInnerLogo} />
+                    </View>
+
+                    <View>
+                      <Text style={styles.gsTitle}>GS 2</Text>
+                      <Text style={styles.gsSub}>Polity & Governance</Text>
+                    </View>
+
+                    <View style={styles.gsFooter}>
+                      <View style={[styles.topicPillBlue, styles.topicPillOffset]}>
+                        <MaterialIcons
+                          name="library-books"
+                          size={10}
+                          color="#3B6EDC"
+                        />
+                        <Text style={styles.topicTextBlue}>21 Topics</Text>
+                      </View>
+                      <View style={styles.arrowBlue}>
+                        <Ionicons name="arrow-forward" size={18} color="#fff" />
+                      </View>
+                    </View>
+                  </View>
+                </ImageBackground>
+              </LinearGradient>
+            )}
+          </Pressable>
+        </View>
+      </ScrollView>
+
+      {/* ===== Security Footer ===== */}
+      <View style={styles.securityBottom}>
+        <Ionicons name="checkmark-circle" size={18} color="#2E9E5B" />
+        <Text style={styles.securityText}>Secure & Encrypted Login</Text>
       </View>
 
-      {/* ================= ACCOUNT INFORMATION ================= */}
-      <View style={styles.card}>
-        <View style={styles.goldCurveTop} />
-
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>Account Information</Text>
-          <TouchableOpacity onPress={() => setEdit(!edit)}>
-            <Ionicons
-              name={edit ? "checkmark" : "pencil"}
-              size={18}
-              color="#6D28D9"
-            />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>FULL NAME</Text>
-          {edit ? (
-            <TextInput
-              value={name}
-              onChangeText={setName}
-              style={styles.input}
-            />
-          ) : (
-            <Text style={styles.value}>{name}</Text>
-          )}
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>MOBILE NUMBER</Text>
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text style={styles.value}>7024913839</Text>
-            <Ionicons
-              name="checkmark-circle"
-              size={16}
-              color="#22C55E"
-              style={{ marginLeft: 6 }}
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <Text style={styles.label}>OFFICIAL BODHA ID</Text>
-          <TouchableOpacity onPress={() => setShowId(!showId)}>
-            <Text style={styles.reveal}>
-              {showId ? "BODHA-UPSC-83921" : "Tap to Reveal"}
-            </Text>
-          </TouchableOpacity>
-        </View>
+      {/* ===== Bottom Nav ===== */}
+      <View style={styles.bottomNav}>
+        <Ionicons name="home" size={24} color="#6A3EA1" />
+        <Ionicons name="chatbubble-outline" size={24} color="#AAA" />
+        <Ionicons name="star" size={24} color="#FFA726" />
       </View>
-
-      {/* ================= SUBSCRIPTION STATUS ================= */}
-      <View style={styles.card}>
-        <View style={styles.goldCurveTop} />
-
-        <View style={styles.subHeader}>
-          <Text style={styles.cardTitle}>Subscription Status</Text>
-          <View style={styles.activeBadge}>
-            <Text style={styles.activeText}>ACTIVE</Text>
-          </View>
-        </View>
-
-        <LinearGradient
-          colors={["#047857", "#059669"]}
-          style={styles.planCard}
-        >
-          <View style={styles.planRow}>
-            <Text style={styles.planLabel}>YOUR PLAN</Text>
-            <View style={styles.planActive}>
-              <Text style={styles.planActiveText}>ACTIVE</Text>
-            </View>
-          </View>
-
-          <Text style={styles.planName}>
-            Bodha Premium (UPSC Mode)
-          </Text>
-        </LinearGradient>
-
-        {[
-          "Structured PYQ-based Preparation",
-          "Anthropology / GS Smart Evaluation",
-          "Daily Discipline & Progress Tracking",
-          "Priority Mentor Support",
-        ].map((t, i) => (
-          <View key={i} style={styles.benefitRow}>
-            <Ionicons name="checkmark-circle" size={18} color="#16A34A" />
-            <Text style={styles.benefitText}>{t}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* ================= LOGOUT ================= */}
-      <TouchableOpacity style={styles.logout}>
-        <MaterialIcons name="logout" size={18} color="#DC2626" />
-        <Text style={styles.logoutText}>Sign Out</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.footer}>Bodha Civils Prep</Text>
-      <Text style={styles.footerSub}>
-        Serious Preparation. Structured Results.
-      </Text>
-    </ScrollView>
+    </View>
   );
 }
 
 /* ================= STYLES ================= */
+
 const styles = StyleSheet.create({
-  container: { backgroundColor: "#F5F3FF" },
+  container: { flex: 1 },
 
   header: {
-    paddingTop: 50,
-    paddingBottom: 100,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-    overflow: "hidden",
+    marginTop: 40,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  iconButton: { backgroundColor: "#fef7f7", padding: 10, borderRadius: 14 },
+  profile: { backgroundColor: "#f9f8fb", padding: 10, borderRadius: 50 },
+
+  logoSection: { alignItems: "center", marginVertical: 24 },
+  logoImage: { width: 90, height: 95, resizeMode: "contain" },
+
+  appName: { fontSize: 28, fontWeight: "700", color: "#911ad2" },
+  subTitle: { fontSize: 16, color: "#6A3EA1", fontWeight: "600" },
+  tagline: { fontSize: 13, color: "#888" },
+
+  banner: {
+    paddingVertical: 22,
+    paddingHorizontal: 24,
+    borderRadius: 36,
+    flexDirection: "row",
     alignItems: "center",
   },
 
-  waveBack: {
-    position: "absolute",
-    bottom: 60,
-    left: -120,
-    width: width + 240,
-    height: 200,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderTopLeftRadius: 400,
-    borderTopRightRadius: 400,
+  bannerIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 18,
   },
 
-  waveMid: {
-    position: "absolute",
-    bottom: 30,
-    left: -100,
-    width: width + 200,
-    height: 180,
-    backgroundColor: "rgba(255,255,255,0.06)",
-    borderTopLeftRadius: 380,
-    borderTopRightRadius: 380,
-  },
+  bannerTitle: { color: "#fff", fontSize: 18, fontWeight: "700" },
+  bannerSub: { color: "rgba(255,255,255,0.85)", fontSize: 13, marginTop: 4 },
 
-  waveFront: {
-    position: "absolute",
-    bottom: 10,
-    left: -80,
-    width: width + 160,
-    height: 160,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    borderTopLeftRadius: 360,
-    borderTopRightRadius: 360,
+  dotsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: -14,
   },
-
-  goldCurveBottom: {
-    position: "absolute",
-    bottom: 0,
-    left: -40,
-    width: width + 80,
+  dot: {
+    width: 6,
     height: 6,
-    backgroundColor: "#D4AF37",
-    borderTopLeftRadius: 200,
-    borderTopRightRadius: 200,
+    borderRadius: 3,
+    backgroundColor: "#fff",
+    opacity: 0.5,
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    width: 22,
+    height: 6,
+    borderRadius: 6,
+    opacity: 1,
   },
 
-  headerTop: {
+  sectionHeader: { paddingHorizontal: 20, marginTop: 40 },
+  sectionTitle: { fontSize: 18, fontWeight: "700", color: "#333" },
+  sectionSub: { fontSize: 13, color: "#777" },
+
+  gsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginTop: 14,
+  },
+
+  gsBorder: { borderRadius: 22, padding: 3 },
+
+  glowPressedPurple: {
+    shadowColor: "#9E7BFF",
+    shadowOpacity: 0.9,
+    shadowRadius: 18,
+    elevation: 14,
+  },
+
+  glowPressedBlue: {
+    shadowColor: "#6EA8FF",
+    shadowOpacity: 0.9,
+    shadowRadius: 18,
+    elevation: 14,
+  },
+
+  /* 🔧 CARD HEIGHT ADJUSTED */
+  gsCard: { height: 180, borderRadius: 20, overflow: "hidden" },
+
+  /* 🔧 INNER SPACING REBALANCED */
+  gsContent: {
+    flex: 1,
+    padding: 16,
+    paddingTop: 18,
+    paddingBottom: 12,
+    justifyContent: "space-between",
+  },
+
+  /* 🔧 ICON TILE SIZE + POSITION */
+  gsIconTile: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: "#FFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 4,
+  },
+
+  /* 🔧 ICON SCALE MATCHED */
+  gsInnerLogo: {
     width: "100%",
-    paddingHorizontal: 20,
+    height: "100%",
+    resizeMode: "contain",
+    transform: [{ scale: 2.5 }],
+  },
+
+  gsTitle: { fontSize: 18, fontWeight: "700", color: "#333" },
+  gsSub: { fontSize: 13, color: "#666", marginTop: 2 },
+
+  /* 🔧 FOOTER MICRO-ALIGN */
+  gsFooter: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 2,
   },
 
-  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "600" },
-
-  /* ===== SINGLE BORDER AVATAR ===== */
-  avatarBorder: {
-    marginTop: 28,
-    width: 104,
-    height: 104,
-    borderRadius: 52,
-    borderWidth: 3,
-    borderColor: "#E9D5FF",
+  topicPillPurple: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-  },
-
-  avatar: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    backgroundColor: "#fff",
-    overflow: "hidden",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  avatarImg: { width: "100%", height: "100%", resizeMode: "cover" },
-
-  cameraButton: {
-    position: "absolute",
-    bottom: -4,
-    right: -4,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#6D28D9",
-    borderWidth: 2,
-    borderColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  name: { color: "#fff", fontSize: 18, marginTop: 12 },
-  role: { color: "#E9D5FF", fontSize: 13 },
-
-  premiumSection: { alignItems: "center", marginTop: -18 },
-
-  badge: {
-    backgroundColor: "#FDE68A",
-    paddingHorizontal: 18,
+    backgroundColor: "#F1E9FF",
+    paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 18,
+    borderRadius: 14,
   },
 
-  badgeText: { fontSize: 12, fontWeight: "600", color: "#92400E" },
+  topicPillBlue: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#E9F1FF",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
+  },
+  topicPillOffset: {
+  marginLeft: -9, // 👈 change value if needed
+},
 
-  card: {
-    backgroundColor: "#fff",
-    marginHorizontal: 16,
-    marginTop: 20,
-    borderRadius: 20,
-    padding: 16,
-    elevation: 4,
+
+  topicTextPurple: {
+    marginLeft: 6,
+    fontWeight: "600",
+    color: "#6A3EA1",
+  },
+  topicTextBlue: {
+    marginLeft: 6,
+    fontWeight: "600",
+    color: "#3B6EDC",
   },
 
-  goldCurveTop: {
+  arrowPurple: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "#9E7BFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  arrowBlue: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: "#6EA8FF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  securityBottom: {
     position: "absolute",
-    top: 0,
+    bottom: 90,
     left: 0,
     right: 0,
-    height: 14,
-    borderTopWidth: 2,
-    borderColor: "#D4AF37",
-    borderTopLeftRadius: 120,
-    borderTopRightRadius: 120,
-  },
-
-  cardHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-
-  cardTitle: { fontWeight: "600" },
-
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 8,
-  },
-
-  label: { color: "#6B7280", fontSize: 12 },
-  value: { fontWeight: "500" },
-
-  input: {
-    borderBottomWidth: 1,
-    borderColor: "#C4B5FD",
-    minWidth: 160,
-    textAlign: "right",
-  },
-
-  reveal: { color: "#6D28D9", fontWeight: "500" },
-
-  subHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 10,
-  },
-
-  activeBadge: {
-    backgroundColor: "#FEF3C7",
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-
-  activeText: { color: "#92400E", fontSize: 11, fontWeight: "600" },
-
-  planCard: {
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 12,
-  },
-
-  planRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  planLabel: { color: "#ECFDF5", fontSize: 11 },
-
-  planActive: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    paddingHorizontal: 10,
-    borderRadius: 10,
-  },
-
-  planActiveText: { color: "#ECFDF5", fontSize: 11 },
-
-  planName: {
-    color: "#ECFDF5",
-    fontSize: 16,
-    fontWeight: "600",
-    marginTop: 6,
-  },
-
-  benefitRow: {
-    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginTop: 6,
   },
 
-  benefitText: {
-    marginLeft: 8,
-    color: "#374151",
-    fontSize: 13,
-  },
+  securityText: { marginLeft: 6, fontSize: 13, color: "#555" },
 
-  logout: {
-    marginTop: 30,
-    alignSelf: "center",
+  bottomNav: {
+    position: "absolute",
+    bottom: 20,
+    left: 16,
+    right: 16,
     flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#FCA5A5",
-    paddingHorizontal: 22,
-    paddingVertical: 8,
+    justifyContent: "space-around",
+    paddingVertical: 16,
+    backgroundColor: "#FFF",
     borderRadius: 20,
-  },
-
-  logoutText: { color: "#DC2626", marginLeft: 6 },
-
-  footer: {
-    textAlign: "center",
-    marginTop: 22,
-    fontWeight: "600",
-    color: "#2563EB",
-  },
-
-  footerSub: {
-    textAlign: "center",
-    color: "#6B7280",
-    marginBottom: 30,
-    fontSize: 12,
   },
 });
